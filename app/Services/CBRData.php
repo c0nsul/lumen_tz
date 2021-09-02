@@ -67,7 +67,7 @@ class CBRData
      * @param $uri
      * @return DOMNodeList|false
      */
-    private function fetchCurrencies($uri): DOMNodeList|bool
+    private function fetchCurrencies($uri): DOMNodeList
     {
         if ($this->xml->load($uri)) {
             $root = $this->xml->documentElement;
