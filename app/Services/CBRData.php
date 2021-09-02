@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use DOMDocument;
+use DOMNodeList;
 
 class CBRData
 {
@@ -24,7 +25,7 @@ class CBRData
         $engNamesArray = [];
 
         $items = $this->fetchCurrencies($urlLibs);
-        if ($items){
+        if ($items) {
             foreach ($items as $item) {
                 $code = $item->getElementsByTagName('CharCode')->item(0)->nodeValue;
                 $engNamesArray[$code] = $item->getElementsByTagName('Name')->item(0)->nodeValue;
@@ -63,23 +64,23 @@ class CBRData
     }
 
     /**
-     * @return array
-     */
-    public function getCurrencyAll(): array
-    {
-        return $this->data;
-    }
-
-    /**
      * @param $uri
-     * @return \DOMNodeList|false
+     * @return DOMNodeList|false
      */
-    private function fetchCurrencies($uri): \DOMNodeList|bool
+    private function fetchCurrencies($uri): DOMNodeList|bool
     {
         if ($this->xml->load($uri)) {
             $root = $this->xml->documentElement;
             return $root->getElementsByTagName("Valute");
         }
         return false;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCurrencyAll(): array
+    {
+        return $this->data;
     }
 }

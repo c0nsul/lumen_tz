@@ -6,17 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Currency extends Model
 {
-    protected $table="currencies";
-    protected $primaryKey="id";
+    protected $table = "currencies";
+    protected $primaryKey = "id";
 
-    protected $guarded=['id'];
+    protected $guarded = ['id'];
 
     public function saveCurrency(array $data)
     {
         $self = new self();
         $self->truncate();
-        foreach ($data as $key=>$value){
-            if(is_array($value)){
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
                 $self->create($value);
             }
         }
