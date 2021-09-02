@@ -38,7 +38,7 @@ class CurrencyCommand extends Command
      */
     public function handle(CBRData $service)
     {
-        $isLoad = $service->load();
+        $isLoad = $service->loadCurrencies();
         if ($isLoad) {
             $allData = $service->getCurrencyAll();
             (new Currency())->saveCurrency($allData);

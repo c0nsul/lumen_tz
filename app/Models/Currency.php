@@ -14,12 +14,12 @@ class Currency extends Model
     public function saveCurrency(array $data)
     {
         $self = new self();
-            foreach ($data as $key=>$value){
-                if(is_array($value)){
-                    $self->create($value);
-                }
-                continue;
+        $self->truncate();
+        foreach ($data as $key=>$value){
+            if(is_array($value)){
+                $self->create($value);
             }
+        }
     }
 
 }

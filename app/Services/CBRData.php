@@ -3,59 +3,83 @@
 namespace App\Services;
 
 use DOMDocument;
-use Illuminate\Support\Str;
 
 class CBRData
 {
     protected $data = [];
+    private DOMDocument $xml;
+
+    public function __construct()
+    {
+        $this->xml = new DOMDocument();
+    }
 
     /**
      * @param null $date
      * @return bool
      */
-    public function load($date = null)
+    public function loadCurrencies($date = null)
     {
-        $url = "http://cbr.ru/scripts/XML_daily.asp";
+        $urlLibs = env('CURRENCY_ENG_API_URI');
+        $engNamesArray = [];
+
+        $items = $this->fetchCurrencies($urlLibs);
+        if ($items){
+            foreach ($items as $item) {
+                $code = $item->getElementsByTagName('CharCode')->item(0)->nodeValue;
+                $engNamesArray[$code] = $item->getElementsByTagName('Name')->item(0)->nodeValue;
+            }
+        } else {
+            return false;
+        }
+
+        $url = env('CURRENCY_API_URI');
         if ($date) {
             $dateStr = strtotime($date);
             $url = $url . "?date_req=" . date("d/m/Y", $dateStr);
         }
 
-        $xml = new DOMDocument();
-        if ($xml->load($url)) {
-            $root = $xml->documentElement;
-            $items = $root->getElementsByTagName("Valute");
+        $items = $this->fetchCurrencies($url);
+
+        if ($items) {
             foreach ($items as $item) {
                 $code = $item->getElementsByTagName('CharCode')->item(0)->nodeValue;
                 $digiCode = $item->getElementsByTagName('NumCode')->item(0)->nodeValue;
                 $name = $item->getElementsByTagName('Name')->item(0)->nodeValue;
-                $curs = $item->getElementsByTagName('Value')->item(0)->nodeValue;
+                $value = $item->getElementsByTagName('Value')->item(0)->nodeValue;
+                $nominal = $item->getElementsByTagName('Nominal')->item(0)->nodeValue;
 
                 $this->data[$code] = [
                     'alphabetic_code' => $code,
                     'digital_code' => $digiCode,
                     'name' => $name,
-                    'rate' => $curs,
-                    'english_name' => Str::slug($name),
+                    'rate' => round(((int)$nominal / (float)$value), 3, PHP_ROUND_HALF_DOWN),
+                    'english_name' => $engNamesArray[$code]
                 ];
             }
-
             return true;
         }
         return false;
     }
 
+    /**
+     * @return array
+     */
     public function getCurrencyAll(): array
     {
         return $this->data;
     }
 
     /**
-     * @param $cur
-     * @return array|mixed
+     * @param $uri
+     * @return \DOMNodeList|false
      */
-    public function getCurrency($cur)
+    private function fetchCurrencies($uri): \DOMNodeList|bool
     {
-        return $this->data[$cur] ?? [];
+        if ($this->xml->load($uri)) {
+            $root = $this->xml->documentElement;
+            return $root->getElementsByTagName("Valute");
+        }
+        return false;
     }
 }
